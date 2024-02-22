@@ -201,5 +201,5 @@ for possible_move in possible_moves:
             best_disabled_move_length = move_path_length
 
 # Display best disabled move and its shortest path
-print('\nBEST MOVE:', best_disabled_move)
+print('\nBEST MOVE: disable ', best_disabled_move)
 print('SHORTEST PATH LENGTH FOR BEST MOVE:', best_disabled_move_length)
