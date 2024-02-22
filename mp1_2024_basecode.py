@@ -147,7 +147,7 @@ for possible_move in possible_moves:
     # Reset the maze and other static variables for a new search
     MazeState.reset_state()
 
-    # Modify the possible_moves list based on the disabled_move
+    # Remove one possible_move from disabled_moves list
     disabled_moves = ['left', 'right', 'down', 'up']
     if possible_moves:
         disabled_moves.remove(possible_move)
@@ -186,7 +186,8 @@ for possible_move in possible_moves:
                         frontier.queue[frontier.queue.index(neighbor)] = neighbor
                         heapify(frontier.queue)
 
-    print(start_state)   
+    print(start_state)
+    # Print no solution if no moves were taken, otherwise print states visited and shortest path
     if MazeState.move_num == 0:
         print(f'No solution')
     else:      
