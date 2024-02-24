@@ -57,7 +57,8 @@ class MazeState():
     
     def __lt__(self, other):
         """ Allows for ordering the states by the path (g) cost """
-        return self.gcost < other.gcost
+        # return self.gcost < other.gcost
+        return (self.gcost + self.heuristic(), self.gcost) < (other.gcost + other.heuristic(), other.gcost)
     
     def __str__(self):
         """ Returns the maze representation of the state """
@@ -112,12 +113,58 @@ class MazeState():
         if self.maze[new_pos] != MazeState.EXIT:
             self.maze[new_pos] = MazeState.VISITED
         return MazeState(new_pos, self.gcost+1, self, move)
+    
+    def gen_heuristic(self, moves=('up', 'down', 'right', 'left')):
+        heur = np.zeros(self.maze.shape, dtype=np.int32)
+        x = 0
+        y = 0
+
+        for i in self.maze:
+            for j in i:
+                if j == self.WALL:
+                    heur[(x, y)] = self.maze.shape[0] * self.maze.shape[1]
+                y += 1
+            x += 1
+            y = 0
+        recent = []
+        temp = []
+
+        for i in range(len(self.ends[0])):
+            x = (self.ends[0][i], self.ends[1][i])
+            recent.append(x)
+        current = 1
+
+        while len(recent) != 0:
+            for i in recent:
+                if heur[i] == 0:
+                    heur[i] = current
+                if heur[((i[0] + 1) % self.maze.shape[0], i[1] % self.maze.shape[1])] == 0 and 'up' in moves:
+                    temp.append(((i[0] + 1) % self.maze.shape[0], i[1] % self.maze.shape[1]))
+
+                if heur[(i[0] % self.maze.shape[0], (i[1] + 1) % self.maze.shape[1])] == 0 and 'left' in moves:
+                    temp.append((i[0] % self.maze.shape[0], (i[1] + 1) % self.maze.shape[1]))
+
+                if heur[((i[0] - 1) % self.maze.shape[0], i[1] % self.maze.shape[1])] == 0 and 'down' in moves:
+                    temp.append(((i[0] - 1) % self.maze.shape[0], i[1] % self.maze.shape[1]))
+
+                if heur[(i[0] % self.maze.shape[0], (i[1] - 1) % self.maze.shape[1])] == 0 and 'right' in moves:
+                    temp.append((i[0] % self.maze.shape[0], (i[1] - 1) % self.maze.shape[1]))
+
+            current += 1
+            recent = temp
+            temp = []
+
+        return heur
+    
+    def heuristic(self, moves=('up', 'down', 'right', 'left')):
+        heuristics = self.gen_heuristic(moves)
+        return heuristics[self.pos]
             
 # Display the heading info
 print('Artificial Intelligence')
 print('MP1: Robot navigation')
 print('SEMESTER: Spring 2024')
-print('NAME: Mateusz Obrochta')
+print('NAME: Group 4')
 print()
 
 print('INITIAL MAZE')
@@ -182,7 +229,7 @@ for possible_move in possible_moves:
                 if neighbor not in frontier.queue:
                     frontier.put(neighbor)
                 else:
-                    if neighbor.gcost < frontier.queue[frontier.queue.index(neighbor)].gcost:
+                    if neighbor.gcost + neighbor.heuristic() < frontier.queue[frontier.queue.index(neighbor)].gcost + frontier.queue[frontier.queue.index(neighbor)].heuristic():
                         frontier.queue[frontier.queue.index(neighbor)] = neighbor
                         heapify(frontier.queue)
 
